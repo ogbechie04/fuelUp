@@ -1,9 +1,38 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./app/**/*.{js,jsx,ts,tsx}", "./components/**/*.{js,jsx,ts,tsx}"],
-  presets: [require("nativewind/preset")],
+  content: ['./app/**/*.{js,jsx,ts,tsx}', './components/**/*.{js,jsx,ts,tsx}'],
+  presets: [require('nativewind/preset')],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        primaryNormal: '#0095C7',
+        primaryNormalHover: '#0086B3',
+        primaryNormalActive: '#00779F',
+        primaryInputField: '#F3F7F9',
+        primaryLight: '#E6F4F9',
+        primaryLightHover: '#D9EFF7',
+        primaryLightActive: '#B0DEEE',
+        primaryDark: '#007095',
+        primaryDarkHover: '#005977',
+        primaryDarkActive: '#00435A',
+        primaryDarker: '#003446',
+        lGNormal: '#D9D9D9',
+        lGNormalHover: '#C3C3C3',
+        lGNormalActive: '#AEAEAE',
+        lGLight: '#FBFBFB',
+        lGLightHover: '#F9F9F9',
+        lGLightActive: '#F3F3F3',
+        lGDark: '#A3A3A3',
+        lGDarkHover: '#828282',
+        lGDarkActive: '#626262',
+        lGDarker: '#4C4C4C',
+        white500: '#FCFCFC',
+        foundationErrorNormal: '#F33F3F',
+      },
+      fontFamily: {
+        satoshi: ['Satoshi'],
+      },
+    },
   },
   plugins: [],
-}
+};

@@ -31,13 +31,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const checkAuth = async () => {
-    const storedToken = await AsyncStorage.getItem('token');
-    const storedUser = await AsyncStorage.getItem('user');
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+    try {
+      const storedToken = await AsyncStorage.getItem('token');
+      const storedUser = await AsyncStorage.getItem('user');
+
+      if (storedToken && storedUser && storedUser !== 'undefined') {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      } else {
+        await AsyncStorage.removeItem('token');
+        await AsyncStorage.removeItem('user');
+      }
+    } catch (error) {
+      console.error('Error during checkAuth:', error);
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('user');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {

@@ -10,11 +10,16 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
+import { API_BASE_URL } from '@env';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Feather from '@expo/vector-icons/Feather';
 import { LoginData, loginSchema } from '@/features/auth/loginSchema';
+import { transformLoginData } from '@/utils/transformAuthData';
+import Toast from 'react-native-toast-message';
+import { useAuth } from '@/context/auth-context';
 
 const Login = () => {
+  const { login, token, logout } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -24,11 +29,38 @@ const Login = () => {
   } = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
     mode: 'onSubmit',
-    defaultValues: { phoneNumber: '', password: '' },
+    defaultValues: { phoneNumber: '', password: '', isDeliveryDriver: false },
   });
 
-  const submitData = (data: LoginData) => {
-    console.log('submitted data:', data);
+  const submitData = async (data: LoginData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(transformLoginData(data)),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || 'Login failed');
+      }
+      Toast.show({
+        type: 'success',
+        text1: 'Login Successful',
+      });
+      console.log('Login done');
+      await login(result.access_token, result.user);
+      router.push('/(tabs)');
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Login Failed',
+        text2: error.message?.includes('Network request failed')
+          ? 'Network error. Please check your connection.'
+          : error.message || 'Please try again',
+      });
+    }
   };
 
   return (
@@ -71,7 +103,7 @@ const Login = () => {
                     )}
                   />
                   {errors.phoneNumber && (
-                    <Text className="text-foundationErrorNormal text-[11px] leading-normal">
+                    <Text className="text-[11px] leading-normal text-foundationErrorNormal">
                       {errors.phoneNumber.message}
                     </Text>
                   )}
@@ -110,12 +142,36 @@ const Login = () => {
                       </View>
                     )}
                   />
+                  {errors.password && (
+                    <Text className="text-[11px] leading-normal text-foundationErrorNormal">
+                      {errors.password.message}
+                    </Text>
+                  )}
                 </View>
-                {errors.password && (
-                  <Text className="text-foundationErrorNormal text-[11px] leading-normal">
-                    {errors.password.message}
-                  </Text>
-                )}
+
+                {/* ------ delivery driver? ------ */}
+                <View className="mt-3 flex-row items-center gap-2">
+                  <Controller
+                    control={control}
+                    name="isDeliveryDriver"
+                    defaultValue={false}
+                    render={({ field: { value, onChange } }) => (
+                      <TouchableOpacity
+                        onPress={() => onChange(!value)}
+                        className="flex-row items-center gap-2"
+                      >
+                        <View className="h-5 w-5 items-center justify-center rounded border border-primaryNormal">
+                          {value && (
+                            <Feather name="check" size={16} color="#007095" />
+                          )}
+                        </View>
+                        <Text style={[styles.inputLabelText]}>
+                          Are you a delivery driver?
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  />
+                </View>
               </View>
               {/* ------ sign up button ------ */}
               <TouchableOpacity

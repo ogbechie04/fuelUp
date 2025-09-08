@@ -15,7 +15,7 @@ import { API_BASE_URL } from '@env';
 import Toast from 'react-native-toast-message';
 import Feather from '@expo/vector-icons/Feather';
 import { SignUpData, signUpSchema } from '@/features/auth/signUpSchema';
-import { transformSignUpData } from '@/utils/transformSignUpData';
+import { transformSignUpData } from '@/utils/transformAuthData';
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -49,20 +49,23 @@ const Signup = () => {
       });
 
       const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || 'Signup failed');
+      }
       Toast.show({
         type: 'success',
         text1: 'Sign Up Successful',
         text2: 'Welcome to FuelUp!',
       });
-      if (!response.ok) {
-        throw new Error(result.message || 'Signup failed');
-      }
-      console.log('User created', result);
-    } catch (error) {
+      console.log('User created');
+      router.push('/(tabs)');
+    } catch (error: any) {
       Toast.show({
         type: 'error',
         text1: 'Sign Up Failed',
-        text2: (error as Error).message || 'Please try again',
+        text2: error.message?.includes('Network request failed')
+          ? 'Network error. Please check your connection.'
+          : error.message || 'Please try again',
       });
     }
   };
@@ -106,7 +109,7 @@ const Signup = () => {
                     )}
                   />
                   {errors.firstName && (
-                    <Text className="text-foundationErrorNormal text-[11px] leading-normal">
+                    <Text className="text-[11px] leading-normal text-foundationErrorNormal">
                       {errors.firstName.message}
                     </Text>
                   )}
@@ -132,7 +135,7 @@ const Signup = () => {
                     )}
                   />
                   {errors.lastName && (
-                    <Text className="text-foundationErrorNormal text-[11px] leading-normal">
+                    <Text className="text-[11px] leading-normal text-foundationErrorNormal">
                       {errors.lastName.message}
                     </Text>
                   )}
@@ -158,7 +161,7 @@ const Signup = () => {
                     )}
                   />
                   {errors.email && (
-                    <Text className="text-foundationErrorNormal text-[11px] leading-normal">
+                    <Text className="text-[11px] leading-normal text-foundationErrorNormal">
                       {errors.email.message}
                     </Text>
                   )}
@@ -185,7 +188,7 @@ const Signup = () => {
                     )}
                   />
                   {errors.phoneNumber && (
-                    <Text className="text-foundationErrorNormal text-[11px] leading-normal">
+                    <Text className="text-[11px] leading-normal text-foundationErrorNormal">
                       {errors.phoneNumber.message}
                     </Text>
                   )}
@@ -227,7 +230,7 @@ const Signup = () => {
                     )}
                   />
                   {errors.password && (
-                    <Text className="text-foundationErrorNormal text-[11px] leading-normal">
+                    <Text className="text-[11px] leading-normal text-foundationErrorNormal">
                       {errors.password.message}
                     </Text>
                   )}

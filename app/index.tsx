@@ -15,7 +15,6 @@ export default function Index() {
     console.log('Index useEffect - Token changed:', token, 'Loading:', loading);
   }, [token, loading]);
 
-  // Show loading spinner while checking auth state
   if (loading) {
     console.log('Index - Showing loading state');
     return (

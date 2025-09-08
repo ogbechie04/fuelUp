@@ -12,9 +12,9 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <Tabs>
-      <Tabs.Screen name="home" options={{ title: 'Home' }} />
-      <Tabs.Screen name="settings" options={{ title: 'Settings' }} />
+    <Tabs screenOptions={{headerShown: false}}>
+      <Tabs.Screen name="index" options={{ title: 'Home' }} />
+      <Tabs.Screen name="search" options={{ title: 'Search' }} />
     </Tabs>
     // <Tabs
     //   screenOptions={{

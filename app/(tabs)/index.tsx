@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useAuth } from '@/context/auth-context';
 
 export default function HomeScreen() {
-  const { user } = useAuth(); // Assuming you have user data in context
+  const { user } = useAuth();
 
   return (
     <View style={styles.container}>
@@ -10,7 +10,7 @@ export default function HomeScreen() {
         <Text style={styles.title}>Welcome to Your App!</Text>
         <Text style={styles.subtitle}>You are successfully logged in.</Text>
         {user && (
-          <Text style={styles.userInfo}>Hello, {user.name || 'User'}!</Text>
+          <Text style={styles.userInfo}>Hello, {user.first_name || 'User'}!</Text>
         )}
       </View>
     </View>

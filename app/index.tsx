@@ -7,13 +7,8 @@ export default function Index() {
   console.log('=== INDEX COMPONENT RENDERING ===');
   const { token, loading, user } = useAuth();
 
-  console.log('Index - Token:', token);
   console.log('Index - Loading:', loading);
   console.log('Index - User:', user);
-
-  useEffect(() => {
-    console.log('Index useEffect - Token changed:', token, 'Loading:', loading);
-  }, [token, loading]);
 
   if (loading) {
     console.log('Index - Showing loading state');

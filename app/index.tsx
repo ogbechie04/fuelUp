@@ -8,7 +8,6 @@ export default function Index() {
   const { token, loading, user } = useAuth();
 
   console.log('Index - Loading:', loading);
-  console.log('Index - User:', user);
 
   if (loading) {
     console.log('Index - Showing loading state');

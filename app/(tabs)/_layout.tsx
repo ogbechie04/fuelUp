@@ -8,8 +8,7 @@ import OrderIconBold from '@/assets/icon/document-text-bold.svg';
 import OrderIconOutline from '@/assets/icon/document-text-outline.svg';
 import SupportIconBold from '@/assets/icon/messages-2-bold.svg';
 import SupportIconOutline from '@/assets/icon/messages-2-outline.svg';
-import ProfileImage from '@/assets/images/profile-image.svg'
-
+import ProfileImage from '@/assets/images/profile-image.svg';
 import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
@@ -20,6 +19,12 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { TabBarIcon } from '@/components/ui/TabBarIcon';
 
+/**
+ *
+ * TODO: update font for tabBarLabel
+ * @returns
+ */
+
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
@@ -28,6 +33,19 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
+        tabBarButton: HapticTab,
+        tabBarStyle: {
+          backgroundColor: '#FEFEFE',
+          borderTopWidth: 0,
+          height: 100,
+          paddingBottom: 30,
+          paddingTop: 16,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 10,
+          elevation: 10,
+        },
       }}
     >
       <Tabs.Screen
@@ -43,6 +61,10 @@ export default function TabLayout() {
               inactiveColor={'#84868C'}
             />
           ),
+          // tabBarLabelStyle: {
+          //   fontFamily: 'Satoshi',
+          //   fontWeight: 500
+          // }
         }}
       />
       <Tabs.Screen
@@ -90,7 +112,10 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarIcon: ({}) => <ProfileImage />  }}/>
+      <Tabs.Screen
+        name="profile"
+        options={{ title: 'Profile', tabBarIcon: ({}) => <ProfileImage /> }}
+      />
     </Tabs>
     // <Tabs
     //   screenOptions={{

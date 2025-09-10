@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useAuth } from '@/context/auth-context';
+import { StationCard } from '@/components/StationCard';
 
 export default function HomeScreen() {
   const { user } = useAuth();
@@ -7,6 +8,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.main}>
+        <StationCard/>
         <Text style={styles.title}>Welcome to Your App!</Text>
         <Text style={styles.subtitle}>You are successfully logged in.</Text>
         {user && (
@@ -20,6 +22,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,

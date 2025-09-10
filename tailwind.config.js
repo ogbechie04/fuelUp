@@ -28,6 +28,13 @@ module.exports = {
         lGDarker: '#4C4C4C',
         white500: '#FCFCFC',
         foundationErrorNormal: '#F33F3F',
+        blackNormal: '#1A201D',
+        successNormal: '#01E17B',
+        successLight: '#E6FCF2',
+        errorNormal: '#F33F3F',
+        errorLight: '#FEECEC',
+        darkgreyNormal: '#84868C',
+        yellowNormal: '#FEE00A'
       },
       fontFamily: {
         satoshi: ['Satoshi'],

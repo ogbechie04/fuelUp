@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
   Text,
   Image,
   TouchableOpacity,
+  ImageSourcePropType,
 } from 'react-native';
 import mobilImage from '@/assets/images/mobil-station.png';
 import GasStation from '@/assets/icon/gas-station.svg';
@@ -19,19 +20,63 @@ import Fontisto from '@expo/vector-icons/Fontisto';
  * @returns
  * TODO: Hide in-stock text
  * TODO: Hide distance, time and rating section
+ * favorite controls whether the heart is filled
+ * onToggleFavorite lets the parent manage the favourite
+ * initialFuelType for the uncontrolled state
+ * fuelType and onFuelTypeChange for the controlled state. Lets the parent manage the favourite
  */
 
-export const StationCard = () => {
+type FuelType = 'petrol' | 'diesel';
+
+interface StationCardProps {
+  stationName: string;
+  image: ImageSourcePropType;
+  prices: Partial<Record<FuelType, number>>;
+  stockAvailable?: Partial<Record<FuelType, boolean>>;
+  distanceKm?: number;
+  closesAtLabel?: number;
+  rating?: number;
+  favorite?: boolean;
+  onToggleFavorite?: (next: boolean) => void;
+  initialFuelType?: FuelType;
+  fuelType?: FuelType;
+  onFuelTypeChange?: (next: FuelType) => void;
+}
+
+export const StationCard: React.FC<StationCardProps> = ({
+  stationName = 'Shell Filling Station',
+  image = mobilImage,
+  prices,
+  stockAvailable,
+  distanceKm,
+  closesAtLabel,
+  rating,
+  favorite,
+  onToggleFavorite,
+  initialFuelType,
+  fuelType,
+  onFuelTypeChange,
+}) => {
+  const [internalFuelType, setInternalFuelType] = useState<FuelType>(
+    initialFuelType || 'petrol'
+  );
+  const currentFuelType = fuelType ?? internalFuelType;
+  const updateFuelType = onFuelTypeChange ?? setInternalFuelType;
   const [isPetrol, setIsPetrol] = useState(true);
-  const [stockAvailable, setStockAvailable] = useState(true);
+  //   const [stockAvailable, setStockAvailable] = useState(true);
 
-  const changeProduct = () => {
-    setIsPetrol((product) => !product);
+  const toggleFuelType = () => {
+    const nextFuel = currentFuelType === 'petrol' ? 'diesel' : 'petrol';
+    updateFuelType(nextFuel);
   };
 
-  const changeStockAvailable = () => {
-    setStockAvailable((stock) => !stock);
-  };
+  //   const changeProduct = ({}) => {
+  //     setIsPetrol((product) => !product);
+  //   };
+
+  //   const changeStockAvailable = () => {
+  //     setStockAvailable((stock) => !stock);
+  //   };
 
   useEffect(() => {
     console.log('Fuel type is now:', isPetrol ? 'Petrol' : 'Diesel');
@@ -39,15 +84,15 @@ export const StationCard = () => {
   return (
     <View className="w-fit max-w-[301px]">
       {/* ------ station image ------ */}
-      <Image className="mb-2" source={mobilImage} />
+      <Image className="mb-2" source={image} />
 
       {/* ------ station name and toggle product ------ */}
       <View className="mb-2 w-full flex-row items-center justify-between">
         <Text style={[styles.satoshiMedium]} className="">
-          Shell Filling Station
+          {stationName}
         </Text>
 
-        {/* ------ toggle button ------- */}
+        {/* ------ toggle fuel button ------- */}
         <View className="flex-row items-center gap-2">
           <Text
             className="text-[#84868C]"
@@ -55,30 +100,35 @@ export const StationCard = () => {
           >
             Toggle Product
           </Text>
-          <TouchableOpacity onPress={changeProduct}>
+          <TouchableOpacity onPress={toggleFuelType}>
             <Fontisto
-              name={isPetrol ? 'toggle-on' : 'toggle-off'}
+              name={currentFuelType === 'petrol' ? 'toggle-on' : 'toggle-off'}
               size={24}
-              color={isPetrol ? '#046977' : '#FEE00A'}
+              color={currentFuelType === 'petrol' ? '#046977' : '#FEE00A'}
             />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* ------ price and availability ------ */}
+      {/* ------ fuel name, fuel price and availability ------ */}
       <View className="mb-4 flex-row items-center gap-2">
         <GasStation width={16} height={16} color={'#1A201D'} />
         <Text
           className="text-blackNormal"
           style={[styles.satoshiMedium, styles.priceText]}
         >
-          {isPetrol ? 'Petrol' : 'Diesel'}: {`₦900/L`}
+          {currentFuelType.charAt(0).toUpperCase() +
+            currentFuelType.substring(1).toLowerCase()}
+          :{' '}
+          {prices?.[currentFuelType] != null
+            ? `${prices[currentFuelType]}/L`
+            : 'Price not available'}
         </Text>
         <Text
-          className={`rounded-[50px] px-[10px] py-[4px] ${stockAvailable ? 'text-successNormal bg-successLight' : 'text-errorNormal bg-errorLight'}`}
+          className={` ${stockAvailable?.[currentFuelType] === true ? 'text-successDark' : 'text-errorNormal'}`}
           style={[styles.satoshiMedium, styles.toggleText]}
         >
-          {stockAvailable ? 'In stock' : 'Out of stock'}
+          {stockAvailable?.[currentFuelType] ? 'In-stock' : 'Out of Stock'}
         </Text>
       </View>
 
@@ -91,15 +141,16 @@ export const StationCard = () => {
             className="text-darkgreyNormal"
             style={[styles.satoshiMedium, styles.toggleText]}
           >
-            {`10`}km
+            {distanceKm ?? '__'}km
           </Text>
           {/* ------ separator ------ */}
           <View className="bg-darkgreyNormal w-[2px]"></View>
           <Clock color={'#84868C'} width={12} height={12} />
+
           <Text
             className="text-darkgreyNormal"
             style={[styles.satoshiMedium, styles.toggleText]}
-          >{`Open till 9PM`}</Text>
+          >{`Open till ${closesAtLabel ?? '10PM'}`}</Text>
         </View>
 
         {/* ------ rating ------ */}
@@ -108,8 +159,10 @@ export const StationCard = () => {
           <Text
             className="text-darkgreyNormal ml-[4px] mr-[8px]"
             style={[styles.satoshiMedium, styles.toggleText]}
-          >{`4.5`}</Text>
-          <TouchableOpacity>
+          >
+            {rating ?? 'N/A'}
+          </Text>
+          <TouchableOpacity onPress={() => onToggleFavorite?.(!favorite)}>
             <Heart color={'#84868C'} width={12} height={12} />
           </TouchableOpacity>
         </View>
@@ -129,7 +182,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Satoshi-bold',
   },
   toggleText: {
-    fontSize: 8,
+    fontSize: 10,
     // color: '#84868C',
   },
   priceText: {

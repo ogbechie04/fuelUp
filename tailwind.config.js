@@ -31,6 +31,7 @@ module.exports = {
         blackNormal: '#1A201D',
         successNormal: '#01E17B',
         successLight: '#E6FCF2',
+        successDark: '#01A95C',
         errorNormal: '#F33F3F',
         errorLight: '#FEECEC',
         darkgreyNormal: '#84868C',

@@ -2,6 +2,7 @@ import { useAuth } from '@/context/auth-context';
 import { Redirect } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import SplashIcon from '@/assets/icon/splash-screen-icon.svg'
 
 export default function Index() {
   console.log('=== INDEX COMPONENT RENDERING ===');
@@ -13,7 +14,8 @@ export default function Index() {
     console.log('Index - Showing loading state');
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#007095" />
+        {/* <ActivityIndicator size="large" color="#007095" /> */}
+        <SplashIcon />
       </View>
     );
   }
@@ -33,6 +35,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'white',
+    backgroundColor: '#007095',
   },
 });

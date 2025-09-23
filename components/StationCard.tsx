@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ImageSourcePropType,
 } from 'react-native';
+import { FuelType } from '@/types/crowdFuelResponse';
 import mobilImage from '@/assets/images/mobil-station.png';
 import GasStation from '@/assets/icon/gas-station.svg';
 import Clock from '@/assets/icon/clock.svg';
@@ -25,8 +26,6 @@ import Fontisto from '@expo/vector-icons/Fontisto';
  * initialFuelType for the uncontrolled state
  * fuelType and onFuelTypeChange for the controlled state. Lets the parent manage the favourite
  */
-
-type FuelType = 'petrol' | 'diesel';
 
 interface StationCardProps {
   stationName: string;
@@ -58,7 +57,7 @@ export const StationCard: React.FC<StationCardProps> = ({
   onFuelTypeChange,
 }) => {
   const [internalFuelType, setInternalFuelType] = useState<FuelType>(
-    initialFuelType || 'petrol'
+    initialFuelType || FuelType.PETROL
   );
   const currentFuelType = fuelType ?? internalFuelType;
   const updateFuelType = onFuelTypeChange ?? setInternalFuelType;
@@ -66,7 +65,8 @@ export const StationCard: React.FC<StationCardProps> = ({
   //   const [stockAvailable, setStockAvailable] = useState(true);
 
   const toggleFuelType = () => {
-    const nextFuel = currentFuelType === 'petrol' ? 'diesel' : 'petrol';
+    const nextFuel =
+      currentFuelType === FuelType.PETROL ? FuelType.DIESEL : FuelType.PETROL;
     updateFuelType(nextFuel);
   };
 
@@ -144,7 +144,7 @@ export const StationCard: React.FC<StationCardProps> = ({
             {distanceKm ?? '__'}km
           </Text>
           {/* ------ separator ------ */}
-          <View className="bg-darkgreyNormal w-[2px]"></View>
+          <View className="w-[2px] bg-darkgreyNormal"></View>
           <Clock color={'#84868C'} width={12} height={12} />
 
           <Text
@@ -157,7 +157,7 @@ export const StationCard: React.FC<StationCardProps> = ({
         <View className="flex-row items-center">
           <Star color={'none'} width={12} height={12} fill={'#FEE00A'} />
           <Text
-            className="text-darkgreyNormal ml-[4px] mr-[8px]"
+            className="ml-[4px] mr-[8px] text-darkgreyNormal"
             style={[styles.satoshiMedium, styles.toggleText]}
           >
             {rating ?? 'N/A'}

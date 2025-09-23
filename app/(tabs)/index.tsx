@@ -1,21 +1,49 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { useAuth } from '@/context/auth-context';
 import { StationCard } from '@/components/StationCard';
+import { fetchCrowdFuelPrices } from '@/api/crowdFuelPrice';
+import { useEffect, useState } from 'react';
+import { transformCrowdFuelData } from '@/utils/transformCrowdFuelData';
+import { StationCardTransformed } from '@/types/stationCardTransformed';
 
 export default function HomeScreen() {
   const { user } = useAuth();
+  const [stations, setStations] = useState<StationCardTransformed[]>([]);
+
+  // useEffect(() => {
+  //   fetchCrowdFuelPrices()
+  //     .then(setStations)
+  //     .catch((err) => console.error('Error fetching stations:', err));
+  //     console.log(stations)
+  // }, []);
+
+  useEffect(() => {
+    fetchCrowdFuelPrices()
+      .then((raw) => {
+        const formatted = transformCrowdFuelData(raw);
+        setStations(formatted);
+      })
+      .catch((err) => {
+        console.log('Error fetching stations:', err);
+      });
+  }, []);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.main}>
-        <StationCard/>
-        <Text style={styles.title}>Welcome to Your App!</Text>
-        <Text style={styles.subtitle}>You are successfully logged in.</Text>
-        {user && (
-          <Text style={styles.userInfo}>Hello, {user.first_name || 'User'}!</Text>
-        )}
+    <ScrollView>
+      <View style={styles.container}>
+        <View style={styles.main}>
+          {stations.map((station) => (
+            <StationCard
+              key={station.id}
+              stationName={station.stationName}
+              image={station.image}
+              prices={station.prices}
+              stockAvailable={station.availability}
+            />
+          ))}
+        </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 

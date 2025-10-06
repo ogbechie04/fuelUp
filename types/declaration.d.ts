@@ -10,3 +10,7 @@ declare module '*.png' {
   const content: number;
   export default content;
 }
+
+declare module '@env' {
+  export const API_BASE_URL: string;
+}

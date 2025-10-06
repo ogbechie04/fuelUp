@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Stack, router } from 'expo-router';
 import {
-  SafeAreaView,
   Text,
   View,
   StyleSheet,
@@ -9,6 +8,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { API_BASE_URL } from '@env';

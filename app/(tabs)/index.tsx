@@ -1,21 +1,26 @@
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/context/auth-context';
 import { StationCard } from '@/components/StationCard';
 import { fetchCrowdFuelPrices } from '@/api/crowdFuelPrice';
 import { useEffect, useState } from 'react';
 import { transformCrowdFuelData } from '@/utils/transformCrowdFuelData';
 import { StationCardTransformed } from '@/types/stationCardTransformed';
+import Location from '@/assets/icon/location.svg';
+import ArrowDown from '@/assets/icon/arrow-down.svg';
+import { router } from 'expo-router';
+import { useLocationStore } from '@/store/locationStore';
 
 export default function HomeScreen() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const { address } = useLocationStore()
   const [stations, setStations] = useState<StationCardTransformed[]>([]);
-
-  // useEffect(() => {
-  //   fetchCrowdFuelPrices()
-  //     .then(setStations)
-  //     .catch((err) => console.error('Error fetching stations:', err));
-  //     console.log(stations)
-  // }, []);
 
   useEffect(() => {
     fetchCrowdFuelPrices()
@@ -29,21 +34,37 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <ScrollView>
-      <View style={styles.container}>
-        <View style={styles.main}>
-          {stations.map((station) => (
-            <StationCard
-              key={station.id}
-              stationName={station.stationName}
-              image={station.image}
-              prices={station.prices}
-              stockAvailable={station.availability}
-            />
-          ))}
+    <SafeAreaView style={styles.container}>
+      <ScrollView>
+        <View>
+          {/* <TouchableOpacity onPress={logout} className="text-xl">
+            <Text>Logout</Text>
+          </TouchableOpacity> */}
+          {/* ------ address ------ */}
+          <View className="flex flex-row mb-[24px]">
+            <View className="mr-[8px]">
+              <Location color={'#0095C7'} width={16} height={16} />
+            </View>
+            <TouchableOpacity className="flex flex-row" onPress={() => router.push('/address')}>
+              <Text className="mr-[8px]">{address ? address : `Choose Location`}</Text>
+              <ArrowDown color={'#1A201D'} width={16} height={16} />
+            </TouchableOpacity>
+          </View>
+          {/* ------ stations displayed ------ */}
+          <View style={styles.main}>
+            {stations.map((station) => (
+              <StationCard
+                key={station.id}
+                stationName={station.stationName}
+                image={station.image}
+                prices={station.prices}
+                stockAvailable={station.availability}
+              />
+            ))}
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -55,8 +76,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
   },
+
   main: {
     flex: 1,
+    gap: 50,
     justifyContent: 'center',
     maxWidth: 960,
     marginHorizontal: 'auto',

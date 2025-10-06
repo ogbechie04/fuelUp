@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { FuelType } from '@/types/crowdFuelResponse';
 import mobilImage from '@/assets/images/mobil-station.png';
+import mobilImageSVG from '@/assets/images/mobil-station.svg';
 import GasStation from '@/assets/icon/gas-station.svg';
 import Clock from '@/assets/icon/clock.svg';
 import Truck from '@/assets/icon/truck.svg';
@@ -40,8 +41,8 @@ interface StationCardProps {
   initialFuelType?: FuelType;
   fuelType?: FuelType;
   onFuelTypeChange?: (next: FuelType) => void;
-}
 
+}
 export const StationCard: React.FC<StationCardProps> = ({
   stationName = 'Shell Filling Station',
   image = mobilImage,
@@ -78,13 +79,15 @@ export const StationCard: React.FC<StationCardProps> = ({
   //     setStockAvailable((stock) => !stock);
   //   };
 
-  useEffect(() => {
-    console.log('Fuel type is now:', isPetrol ? 'Petrol' : 'Diesel');
-  }, [isPetrol]);
+  // useEffect(() => {
+  //   console.log('Fuel type is now:', isPetrol ? 'Petrol' : 'Diesel');
+  // }, [isPetrol]);
   return (
-    <View className="w-fit max-w-[301px]">
+    <View className="w-fit flex-1">
       {/* ------ station image ------ */}
-      <Image className="mb-2" source={image} />
+      <View className='flex-1'>
+        <Image className="mb-2 flex-1 w-full rounded-[9px]" source={image} />
+      </View>
 
       {/* ------ station name and toggle product ------ */}
       <View className="mb-2 w-full flex-row items-center justify-between">

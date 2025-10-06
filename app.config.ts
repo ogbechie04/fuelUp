@@ -53,6 +53,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         RNMapboxMapsDownloadToken: MAPBOX_DOWNLOAD_TOKEN,
       },
     ],
+    [
+      'expo-location',
+      {
+        locationWhenInUsePermission:
+          'Allow FuelUp to use your location to find nearby filling stations.',
+        locationAlwaysAndWhenInUsePermission:
+          'Allow FuelUp to use your location even when the app is in the background.',
+      },
+    ],
     'expo-font',
   ],
   experiments: {

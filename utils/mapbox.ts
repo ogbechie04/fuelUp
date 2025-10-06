@@ -4,7 +4,7 @@ const MAPBOX_TOKEN = process.env.MAPBOX_PUBLIC_TOKEN;
 
 export const forwardGeocode = async (
   place: string
-): Promise<{ lat: number; lng: number; address?: string }> => {
+): Promise<{ lat: number; lng: number; address: string }> => {
   const response = await fetch(
     `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
       place
@@ -53,14 +53,23 @@ export const getFullAddressFromCoords = async (
   return data.features[0]?.place_name ?? '';
 };
 
-export const fetchAddressSelections = async (query: string) => {
+export type AddressSuggestion = {
+  id: string;
+  placeName: string;
+  lat: number;
+  lng: number;
+};
+
+export const fetchAddressSelections = async (
+  query: string
+): Promise<AddressSuggestion[]> => {
   const response = await fetch(
     `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?autocomplete=true&country=NG&limit=5&access_token=${MAPBOX_TOKEN}`
   );
   const data = await response.json();
   return data.features.map((f: any) => ({
     id: f.id,
-    placeName: f.placeName,
+    placeName: f.place_name,
     lat: f.center[1],
     lng: f.center[0],
   }));

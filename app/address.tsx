@@ -16,11 +16,18 @@ import LocationIcon from '@/assets/icon/location.svg';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useLocationStore } from '@/store/locationStore';
-import { forwardGeocode, reverseGeocode } from '@/utils/mapbox';
+import {
+  forwardGeocode,
+  reverseGeocode,
+  fetchAddressSelections,
+  type AddressSuggestion,
+} from '@/utils/mapbox';
 import { useRecentAddressStore } from '@/store/recentAddressesStore';
+import debounce from 'lodash.debounce';
 
 export default function Address() {
   const [query, setQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const setAddress = useLocationStore((s) => s.setAddress);
   const setLga = useLocationStore((s) => s.setLga);
   const { recentAddresses, addAddress } = useRecentAddressStore();
@@ -46,7 +53,7 @@ export default function Address() {
       );
 
       selectAddress(address, city);
-      console.log(address, city)
+      console.log(address, city);
     } catch (err) {
       Alert.alert('Error', 'Unable to fetch location');
       console.log(err);
@@ -59,14 +66,24 @@ export default function Address() {
       const { city } = await reverseGeocode(lat, lng);
 
       selectAddress(address, city);
-      console.log(address, city)
+      console.log(address, city);
     } catch (err) {
       Alert.alert('Error', 'Could not find location');
       console.log(err);
     }
   };
 
-  
+  const fetchSuggestions = debounce(async (text: string) => {
+    if (!text) return setSuggestions([]);
+    const results = await fetchAddressSelections(text);
+    setSuggestions(results);
+  }, 500);
+
+  const handleSelectSuggestion = async (sug: AddressSuggestion) => {
+    const { address, city } = await reverseGeocode(sug.lat, sug.lng);
+    selectAddress(address, city);
+    router.replace('/(tabs)');
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -94,8 +111,11 @@ export default function Address() {
               placeholderTextColor={'#D9D9D9'}
               className={`flex flex-1 justify-start pl-[8px]`}
               value={query}
-              onChangeText={setQuery}
-              onSubmitEditing={handleManualSearch}
+              onChangeText={(text) => {
+                setQuery(text);
+                fetchSuggestions(text);
+              }}
+              onSubmitEditing={() => setSuggestions([])}
               returnKeyType="search"
               // secureTextEntry={!showPassword}
               // style={[styles.inputText]}
@@ -103,6 +123,21 @@ export default function Address() {
             />
             <Search width={16} height={16} color={'#84868C'} />
           </View>
+          
+          {/* Suggestion dropdown */}
+          {suggestions.length > 0 && (
+            <View className="mt-2 rounded-md border border-gray-200 bg-white shadow">
+              {suggestions.map((sug) => (
+                <TouchableOpacity
+                  key={sug.id}
+                  className="border-b border-gray-100 p-3"
+                  onPress={() => handleSelectSuggestion(sug)}
+                >
+                  <Text className="text-sm text-gray-700">{sug.placeName}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
           {/* ------ use your location ------ */}
           <TouchableOpacity
             className="mt-[12px] flex-row gap-[8px]"

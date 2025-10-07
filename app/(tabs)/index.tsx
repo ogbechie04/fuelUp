@@ -1,75 +1,104 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet, Text } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '@/context/auth-context';
+import { StationCard } from '@/components/StationCard';
+import { fetchCrowdFuelPrices } from '@/api/crowdFuelPrice';
+import { useEffect, useState } from 'react';
+import { transformCrowdFuelData } from '@/utils/transformCrowdFuelData';
+import { StationCardTransformed } from '@/types/stationCardTransformed';
+import Location from '@/assets/icon/location.svg';
+import ArrowDown from '@/assets/icon/arrow-down.svg';
+import { router } from 'expo-router';
+import { useLocationStore } from '@/store/locationStore';
 
 export default function HomeScreen() {
+  const { user, logout } = useAuth();
+  const { address } = useLocationStore()
+  const [stations, setStations] = useState<StationCardTransformed[]>([]);
+
+  useEffect(() => {
+    fetchCrowdFuelPrices()
+      .then((raw) => {
+        const formatted = transformCrowdFuelData(raw);
+        setStations(formatted);
+      })
+      .catch((err) => {
+        console.log('Error fetching stations:', err);
+      });
+  }, []);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <Text className='text-base italic text-green-500'>Hello! Interesting</Text>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <SafeAreaView style={styles.container}>
+      <ScrollView>
+        <View>
+          {/* <TouchableOpacity onPress={logout} className="text-xl">
+            <Text>Logout</Text>
+          </TouchableOpacity> */}
+          {/* ------ address ------ */}
+          <View className="flex flex-row mb-[24px]">
+            <View className="mr-[8px]">
+              <Location color={'#0095C7'} width={16} height={16} />
+            </View>
+            <TouchableOpacity className="flex flex-row" onPress={() => router.push('/address')}>
+              <Text className="mr-[8px]">{address ? address : `Choose Location`}</Text>
+              <ArrowDown color={'#1A201D'} width={16} height={16} />
+            </TouchableOpacity>
+          </View>
+          {/* ------ stations displayed ------ */}
+          <View style={styles.main}>
+            {stations.map((station) => (
+              <StationCard
+                key={station.id}
+                stationName={station.stationName}
+                image={station.image}
+                prices={station.prices}
+                stockAvailable={station.availability}
+              />
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+    backgroundColor: '#ffffff',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
+    padding: 20,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+
+  main: {
+    flex: 1,
+    gap: 50,
+    justifyContent: 'center',
+    maxWidth: 960,
+    marginHorizontal: 'auto',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  title: {
+    fontSize: 64,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  subtitle: {
+    fontSize: 36,
+    color: '#38434D',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  userInfo: {
+    fontSize: 20,
+    color: '#007095',
+    textAlign: 'center',
   },
 });

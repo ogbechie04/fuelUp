@@ -1,7 +1,6 @@
 import { router, Stack } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  SafeAreaView,
   Text,
   View,
   StyleSheet,
@@ -9,6 +8,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Controller, useForm } from 'react-hook-form';
 import { API_BASE_URL } from '@env';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -48,8 +48,11 @@ const Login = () => {
       Toast.show({
         type: 'success',
         text1: 'Login Successful',
+        autoHide: true,
+        visibilityTime: 4000,
       });
       console.log('Login done');
+      //  console.log('Login response:', data);
       await login(result.access_token, result.user);
       router.push('/(tabs)');
     } catch (error: any) {
@@ -59,7 +62,10 @@ const Login = () => {
         text2: error.message?.includes('Network request failed')
           ? 'Network error. Please check your connection.'
           : error.message || 'Please try again',
+        autoHide: true,
+        visibilityTime: 4000,
       });
+      // console.log('Fetch error:', error);
     }
   };
 

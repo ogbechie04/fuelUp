@@ -19,10 +19,14 @@ import { useLocationStore } from '@/store/locationStore';
 
 export default function HomeScreen() {
   const { user, logout } = useAuth();
-  const { address } = useLocationStore()
+  const { loadLocation } = useLocationStore();
+  const address = useLocationStore((s) => s.address);
   const [stations, setStations] = useState<StationCardTransformed[]>([]);
 
+  console.log('CURRENT address in home:', address);
+
   useEffect(() => {
+    loadLocation();
     fetchCrowdFuelPrices()
       .then((raw) => {
         const formatted = transformCrowdFuelData(raw);
@@ -41,12 +45,17 @@ export default function HomeScreen() {
             <Text>Logout</Text>
           </TouchableOpacity> */}
           {/* ------ address ------ */}
-          <View className="flex flex-row mb-[24px]">
+          <View className="mb-[24px] flex flex-row">
             <View className="mr-[8px]">
               <Location color={'#0095C7'} width={16} height={16} />
             </View>
-            <TouchableOpacity className="flex flex-row" onPress={() => router.push('/address')}>
-              <Text className="mr-[8px]">{address ? address : `Choose Location`}</Text>
+            <TouchableOpacity
+              className="flex flex-row"
+              onPress={() => router.push('/address')}
+            >
+              <Text className="mr-[8px]">
+                {address ? address : `Choose Location`}
+              </Text>
               <ArrowDown color={'#1A201D'} width={16} height={16} />
             </TouchableOpacity>
           </View>

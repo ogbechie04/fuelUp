@@ -18,12 +18,16 @@ import { useState } from 'react';
 import { useLocationStore } from '@/store/locationStore';
 import {
   forwardGeocode,
-  reverseGeocode,
   fetchAddressSelections,
   type AddressSuggestion,
 } from '@/utils/mapbox';
 import { useRecentAddressStore } from '@/store/recentAddressesStore';
 import debounce from 'lodash.debounce';
+import {
+  getPlaceDetails,
+  getPlacePredictions,
+  reverseGeocode,
+} from '@/utils/googleMap';
 
 export default function Address() {
   const [query, setQuery] = useState('');
@@ -33,10 +37,13 @@ export default function Address() {
   const { recentAddresses, addAddress } = useRecentAddressStore();
 
   const selectAddress = (address: string, lga: string) => {
+    console.log('SELECTED:', address, lga);
     setAddress(address);
     setLga(lga);
     addAddress(address);
-    router.replace('/(tabs)');
+    setTimeout(() => {
+      router.replace('/(tabs)');
+    });
   };
 
   const handleCurrentLocation = async () => {
@@ -62,7 +69,7 @@ export default function Address() {
 
   const handleManualSearch = async () => {
     try {
-      const { lat, lng, address } = await forwardGeocode(query);
+      const { lat, lng, address } = await getPlaceDetails(query);
       const { city } = await reverseGeocode(lat, lng);
 
       selectAddress(address, city);
@@ -75,14 +82,22 @@ export default function Address() {
 
   const fetchSuggestions = debounce(async (text: string) => {
     if (!text) return setSuggestions([]);
-    const results = await fetchAddressSelections(text);
+    const results = await getPlacePredictions(text);
     setSuggestions(results);
   }, 500);
 
   const handleSelectSuggestion = async (sug: AddressSuggestion) => {
-    const { address, city } = await reverseGeocode(sug.lat, sug.lng);
-    selectAddress(address, city);
-    router.replace('/(tabs)');
+    try {
+      const { lat, lng, address } = await getPlaceDetails(sug.place_id);
+
+      const { city } = await reverseGeocode(lat, lng);
+
+      selectAddress(address, city);
+      router.replace('/(tabs)');
+    } catch (err) {
+      Alert.alert('Error', 'Failed to select address');
+      console.error('handleSelectSuggestion error:', err);
+    }
   };
 
   return (
@@ -123,17 +138,17 @@ export default function Address() {
             />
             <Search width={16} height={16} color={'#84868C'} />
           </View>
-          
+
           {/* Suggestion dropdown */}
           {suggestions.length > 0 && (
             <View className="mt-2 rounded-md border border-gray-200 bg-white shadow">
-              {suggestions.map((sug) => (
+              {suggestions.map((sug, index) => (
                 <TouchableOpacity
-                  key={sug.id}
-                  className="border-b border-gray-100 p-3"
+                  key={index}
                   onPress={() => handleSelectSuggestion(sug)}
+                  className="border-b border-gray-200 py-[8px]"
                 >
-                  <Text className="text-sm text-gray-700">{sug.placeName}</Text>
+                  <Text>{sug.description}</Text>
                 </TouchableOpacity>
               ))}
             </View>

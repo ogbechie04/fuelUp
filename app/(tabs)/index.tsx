@@ -16,14 +16,16 @@ import Location from '@/assets/icon/location.svg';
 import ArrowDown from '@/assets/icon/arrow-down.svg';
 import { router } from 'expo-router';
 import { useLocationStore } from '@/store/locationStore';
+import { normalizeLgaName } from '@/utils/normalizeLga';
 
 export default function HomeScreen() {
   const { user, logout } = useAuth();
-  const { loadLocation } = useLocationStore();
+  const { loadLocation, lga } = useLocationStore();
   const address = useLocationStore((s) => s.address);
   const [stations, setStations] = useState<StationCardTransformed[]>([]);
-
-  console.log('CURRENT address in home:', address);
+  const [filteredStations, setFilteredStations] = useState<
+    StationCardTransformed[]
+  >([]);
 
   useEffect(() => {
     loadLocation();
@@ -36,6 +38,27 @@ export default function HomeScreen() {
         console.log('Error fetching stations:', err);
       });
   }, []);
+
+  useEffect(() => {
+    if (!lga) {
+      setFilteredStations(stations);
+      return;
+    }
+    console.log('Selected LGA:', lga);
+    console.log('Normalized LGA:', normalizeLgaName(lga));
+    console.log(
+      'Normalized Station LGAs:',
+      stations.map((s) => normalizeLgaName(s.city))
+    );
+    console.log(
+      'Station LGAs:',
+      stations.map((s) => s.city)
+    );
+    const filtered = stations.filter(
+      (station) => normalizeLgaName(station.city) === normalizeLgaName(lga)
+    );
+    setFilteredStations(filtered);
+  }, [stations, lga]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -61,13 +84,19 @@ export default function HomeScreen() {
           </View>
           {/* ------ stations displayed ------ */}
           <View style={styles.main}>
-            {stations.map((station) => (
+            {filteredStations.map((station) => (
               <StationCard
                 key={station.id}
                 stationName={station.stationName}
                 image={station.image}
                 prices={station.prices}
                 stockAvailable={station.availability}
+                onPress={() =>
+                  router.push({
+                    pathname: '/station/[stationId]',
+                    params: { stationId: station.id },
+                  })
+                }
               />
             ))}
           </View>

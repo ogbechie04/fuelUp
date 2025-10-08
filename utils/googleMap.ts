@@ -41,14 +41,25 @@ export const reverseGeocode = async (
     `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_API_KEY}`
   );
   const data = await response.json();
-  const address = data.results[0]?.formatted_address ?? '';
+  const result = data.results?.[0];
+  const address = result?.formatted_address || '';
 
-  const cityComponent =
-    data.results[0]?.address_components.find(
-      (comp: any) =>
-        comp.types.includes('locality') ||
-        comp.types.includes('administrative_area_level_2')
-    )?.long_name ?? '';
+  let city = '';
+  if (result) {
+    for (const comp of result.address_components) {
+      if (comp.types.includes('administrative_area_level_2')) {
+        city = comp.long_name;
+        break;
+      }
+    }
 
-  return { address, city: cityComponent };
+    if (!city) {
+      const localityComp = result.address_components.find((c: any) =>
+        c.types.includes('locality')
+      );
+      city = localityComp?.long_name || '';
+    }
+  }
+
+  return { address, city };
 };

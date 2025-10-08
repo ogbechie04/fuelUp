@@ -41,6 +41,7 @@ interface StationCardProps {
   initialFuelType?: FuelType;
   fuelType?: FuelType;
   onFuelTypeChange?: (next: FuelType) => void;
+  onPress?: () => void;
 
 }
 export const StationCard: React.FC<StationCardProps> = ({
@@ -56,6 +57,7 @@ export const StationCard: React.FC<StationCardProps> = ({
   initialFuelType,
   fuelType,
   onFuelTypeChange,
+  onPress,
 }) => {
   const [internalFuelType, setInternalFuelType] = useState<FuelType>(
     initialFuelType || FuelType.PETROL
@@ -83,7 +85,13 @@ export const StationCard: React.FC<StationCardProps> = ({
   //   console.log('Fuel type is now:', isPetrol ? 'Petrol' : 'Diesel');
   // }, [isPetrol]);
   return (
-    <View className="w-fit flex-1">
+    <TouchableOpacity
+      activeOpacity={onPress ? 0.8 : 1}
+      onPress={onPress}
+      disabled={!onPress}
+      className="w-fit flex-1"
+    >
+      <View className="w-fit flex-1">
       {/* ------ station image ------ */}
       <View className='flex-1'>
         <Image className="mb-2 flex-1 w-full rounded-[9px]" source={image} />
@@ -170,7 +178,8 @@ export const StationCard: React.FC<StationCardProps> = ({
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+      </View>
+    </TouchableOpacity>
   );
 };
 

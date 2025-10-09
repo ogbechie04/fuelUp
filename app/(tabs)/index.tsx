@@ -17,15 +17,15 @@ import ArrowDown from '@/assets/icon/arrow-down.svg';
 import { router } from 'expo-router';
 import { useLocationStore } from '@/store/locationStore';
 import { normalizeLgaName } from '@/utils/normalizeLga';
+import { useStationStore } from '@/store/useStationStore';
 
 export default function HomeScreen() {
   const { user, logout } = useAuth();
   const { loadLocation, lga } = useLocationStore();
   const address = useLocationStore((s) => s.address);
-  const [stations, setStations] = useState<StationCardTransformed[]>([]);
-  const [filteredStations, setFilteredStations] = useState<
-    StationCardTransformed[]
-  >([]);
+  // const [stations, setStations] = useState<StationCardTransformed[]>([]);
+  const {stations, setStations} = useStationStore()
+  const [filteredStations, setFilteredStations] = useState(stations);
 
   useEffect(() => {
     loadLocation();

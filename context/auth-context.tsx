@@ -1,6 +1,13 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
+import { setUnauthorizedHandler } from '@/utils/authorizedFetch';
 
 interface AuthContextType {
   user: any;
@@ -29,20 +36,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const login = async (authToken: string, userData: any) => {
+  const login = useCallback(async (authToken: string, userData: any) => {
     await AsyncStorage.setItem('token', authToken);
     await AsyncStorage.setItem('user', JSON.stringify(userData));
     setToken(authToken);
     setUser(userData);
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await AsyncStorage.removeItem('token');
     await AsyncStorage.removeItem('user');
     setToken(null);
     setUser(null);
-    router.replace('/login')
-  };
+    router.replace('/login');
+  }, []);
 
   const checkAuth = async () => {
     try {
@@ -68,6 +75,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     checkAuth();
   }, []);
+
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      console.log('AuthContext - received 401, logging out user');
+      void logout();
+    });
+    return () => {
+      setUnauthorizedHandler(null);
+    };
+  }, [logout]);
 
   return (
     <AuthContext.Provider value={{ user, token, loading, login, logout }}>

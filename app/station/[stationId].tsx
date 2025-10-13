@@ -80,10 +80,11 @@ export default function StationPage() {
         stationId: station.id,
         stationName: station.stationName,
         stationAddress,
+        deliveryAddress: null,
         fuelType,
         quantity,
         pricePerLiter,
-        totalPrice: pricePerLiter * quantity,
+        totalAmount: pricePerLiter * quantity,
       });
       setOrderModalVisible(false);
       router.push('/orders');

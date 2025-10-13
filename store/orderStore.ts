@@ -1,22 +1,30 @@
 import { FuelType } from '@/types/crowdFuelResponse';
 import { create } from 'zustand';
 
-interface Order {
+export interface OrderDetails {
   stationId: string;
   stationName: string;
   stationAddress: string;
+  deliveryAddress: string | null;
   fuelType: FuelType;
   quantity: number;
   pricePerLiter: number;
-  totalPrice: number;
+  totalAmount: number;
 }
 
-export const useOrderStore = create<{
-  order: Order | null;
-  setOrder: (order: Order) => void;
+interface OrderStoreState {
+  order: OrderDetails | null;
+  setOrder: (order: OrderDetails) => void;
+  updateOrder: (updates: Partial<OrderDetails>) => void;
   clearOrder: () => void;
-}>((set) => ({
+}
+
+export const useOrderStore = create<OrderStoreState>((set) => ({
   order: null,
   setOrder: (order) => set({ order }),
+  updateOrder: (updates) =>
+    set((state) =>
+      state.order ? { order: { ...state.order, ...updates } } : state
+    ),
   clearOrder: () => set({ order: null }),
 }));

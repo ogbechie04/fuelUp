@@ -64,9 +64,9 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView>
         <View>
-          {/* <TouchableOpacity onPress={logout} className="text-xl">
+          <TouchableOpacity onPress={logout} className="text-xl">
             <Text>Logout</Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>
           {/* ------ address ------ */}
           <View className="mb-[24px] flex flex-row">
             <View className="mr-[8px]">

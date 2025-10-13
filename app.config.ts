@@ -1,6 +1,6 @@
 import { ExpoConfig, ConfigContext } from 'expo/config';
 
-const MAPBOX_DOWNLOAD_TOKEN = process.env.RN_MAPBOX_DOWNLOAD_TOKEN ?? 'sk.ey..';
+const MAPBOX_DOWNLOAD_TOKEN = process.env.EXPO_PUBLIC_RN_MAPBOX_DOWNLOAD_TOKEN ?? 'sk.ey..';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,

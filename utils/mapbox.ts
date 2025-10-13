@@ -1,6 +1,6 @@
 // import {MAPBOX_PUBLIC_TOKEN} from '@env'
 
-const MAPBOX_TOKEN = process.env.MAPBOX_PUBLIC_TOKEN;
+const MAPBOX_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN;
 
 export type AddressSuggestion = {
   place_id: string;

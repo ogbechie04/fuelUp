@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Controller, useForm } from 'react-hook-form';
-import { API_BASE_URL } from '@env';
+// import { EXPO_PUBLIC_API_BASE_URL } from '@env';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Feather from '@expo/vector-icons/Feather';
 import { LoginData, loginSchema } from '@/features/auth/loginSchema';
@@ -19,6 +19,7 @@ import Toast from 'react-native-toast-message';
 import { useAuth } from '@/context/auth-context';
 
 const Login = () => {
+  const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL
   const { login, token, logout } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
 

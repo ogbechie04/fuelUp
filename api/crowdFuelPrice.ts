@@ -1,8 +1,7 @@
-import { API_BASE_URL } from '@env';
-
 export const fetchCrowdFuelPrices = async () => {
+  const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
   try {
-    const response = await fetch('http://192.168.100.126:3000/crowd-fuel-price', {
+    const response = await fetch(`${API_BASE_URL}/crowd-fuel-price`, {
       method: 'GET',
     });
     if (!response.ok) {

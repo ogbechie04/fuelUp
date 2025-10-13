@@ -11,13 +11,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { API_BASE_URL } from '@env';
+// import { API_BASE_URL } from '@env';
 import Toast from 'react-native-toast-message';
 import Feather from '@expo/vector-icons/Feather';
 import { SignUpData, signUpSchema } from '@/features/auth/signUpSchema';
 import { transformSignUpData } from '@/utils/transformAuthData';
 
 const Signup = () => {
+  const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL
   const [showPassword, setShowPassword] = useState(false);
 
   const {

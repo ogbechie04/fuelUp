@@ -53,7 +53,6 @@ const Login = () => {
         visibilityTime: 4000,
       });
       console.log('Login done');
-      //  console.log('Login response:', data);
       await login(result.access_token, result.user);
       router.push('/(tabs)');
     } catch (error: any) {
@@ -66,7 +65,6 @@ const Login = () => {
         autoHide: true,
         visibilityTime: 4000,
       });
-      // console.log('Fetch error:', error);
     }
   };
 

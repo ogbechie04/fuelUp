@@ -37,7 +37,6 @@ export default function Address() {
   const { recentAddresses, addAddress } = useRecentAddressStore();
 
   const selectAddress = (address: string, lga: string) => {
-    console.log('SELECTED:', address, lga);
     setAddress(address);
     setLga(lga);
     addAddress(address);
@@ -60,7 +59,6 @@ export default function Address() {
       );
 
       selectAddress(address, city);
-      console.log(address, city);
     } catch (err) {
       Alert.alert('Error', 'Unable to fetch location');
       console.log(err);
@@ -73,7 +71,6 @@ export default function Address() {
       const { city } = await reverseGeocode(lat, lng);
 
       selectAddress(address, city);
-      console.log(address, city);
     } catch (err) {
       Alert.alert('Error', 'Could not find location');
       console.log(err);

@@ -44,16 +44,6 @@ export default function HomeScreen() {
       setFilteredStations(stations);
       return;
     }
-    console.log('Selected LGA:', lga);
-    console.log('Normalized LGA:', normalizeLgaName(lga));
-    console.log(
-      'Normalized Station LGAs:',
-      stations.map((s) => normalizeLgaName(s.city))
-    );
-    console.log(
-      'Station LGAs:',
-      stations.map((s) => s.city)
-    );
     const filtered = stations.filter(
       (station) => normalizeLgaName(station.city) === normalizeLgaName(lga)
     );

@@ -93,8 +93,14 @@ export default function OrderDetailScreen() {
   };
 
   useEffect(() => {
+  fetchOrder(); // initial load
+
+  const interval = setInterval(() => {
     fetchOrder();
-  }, [orderId, token]);
+  }, 15000); // every 15 seconds
+
+  return () => clearInterval(interval);
+}, [orderId, token]);
 
   const firstItem = order?.items?.[0];
   const stationName =

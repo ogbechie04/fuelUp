@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   ActivityIndicator,
@@ -12,9 +12,11 @@ import { router } from 'expo-router';
 import { Accordion } from '@/components/Accordion';
 import { useLocationStore } from '@/store/locationStore';
 import { OrderDetails, useOrderStore } from '@/store/orderStore';
+import { useStationStore } from '@/store/useStationStore';
 import { FuelType } from '@/types/crowdFuelResponse';
 import { useAuth } from '@/context/auth-context';
 import { authorizedFetch } from '@/utils/authorizedFetch';
+import { normalizeLgaName } from '@/utils/normalizeLga';
 
 const DELIVERY_FEE = 1000;
 const SERVICE_FEE = 1000;
@@ -49,12 +51,51 @@ type ApiOrder = {
 const isNumber = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value);
 
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const isOrderArray = (value: unknown): value is ApiOrder[] =>
+  Array.isArray(value) &&
+  value.every((item) => item && typeof item === 'object');
+
+const ORDER_RESPONSE_KEYS = ['orders', 'data', 'result', 'payload'];
+
+const extractOrdersFromPayload = (payload: unknown): ApiOrder[] => {
+  if (isOrderArray(payload)) {
+    return payload;
+  }
+
+  if (isPlainObject(payload)) {
+    for (const key of ORDER_RESPONSE_KEYS) {
+      if (key in payload) {
+        const nested = extractOrdersFromPayload(payload[key]);
+        if (nested.length > 0) {
+          return nested;
+        }
+      }
+    }
+
+    for (const value of Object.values(payload)) {
+      const nested = extractOrdersFromPayload(value);
+      if (nested.length > 0) {
+        return nested;
+      }
+    }
+  }
+
+  return [];
+};
+
 const normaliseStatus = (status?: string) =>
   status ? status.replace(/_/g, ' ') : 'unknown';
 
+const ONGOING_STATUS = ['pending', 'confirmed', 'in_transit'];
+const COMPLETED_STATUS = ['delivered', 'cancelled'];
+
 export default function OrdersScreen() {
-  const { address } = useLocationStore();
+  const { address, lga } = useLocationStore();
   const { order, clearOrder, updateOrder } = useOrderStore();
+  const getStationById = useStationStore((state) => state.getStationsById);
   const { token } = useAuth();
 
   const [placingOrder, setPlacingOrder] = useState(false);
@@ -67,52 +108,63 @@ export default function OrdersScreen() {
   const [ordersError, setOrdersError] = useState<string | null>(null);
   const hasFetchedOrders = useRef(false);
 
-  const fetchOrders = async () => {
-    if (!API_BASE_URL) {
-      setOrdersError('API base URL is not configured.');
-      return;
-    }
+  const fetchOrders = useCallback(
+    async (options?: { silent?: boolean }) => {
+      const silent = Boolean(options?.silent);
 
-    if (!token) {
-      setOrdersError('Please log in to view your orders.');
-      return;
-    }
-
-    try {
-      setOrdersLoading(true);
-      setOrdersError(null);
-
-      const data = await authorizedFetch<ApiOrder[] | { orders: ApiOrder[] }>(
-        token,
-        `${API_BASE_URL}/orders`
-      );
-
-      if (Array.isArray(data)) {
-        setOrders(data);
-      } else if (Array.isArray(data?.orders)) {
-        setOrders(data.orders);
-      } else {
-        setOrders([]);
+      if (!API_BASE_URL) {
+        setOrdersError('API base URL is not configured.');
+        return;
       }
 
-      hasFetchedOrders.current = true;
-    } catch (error: any) {
-      setOrdersError(error?.message ?? 'Something went wrong.');
-    } finally {
-      setOrdersLoading(false);
-    }
-  };
+      if (!token) {
+        setOrdersError('Please log in to view your orders.');
+        return;
+      }
+
+      try {
+        if (!silent) {
+          setOrdersLoading(true);
+        }
+
+        const data = await authorizedFetch<unknown>(
+          token,
+          `${API_BASE_URL}/orders`
+        );
+        console.log('orders fetch payload:', JSON.stringify(data, null, 2));
+        const parsedOrders = extractOrdersFromPayload(data);
+        setOrders(parsedOrders);
+        setOrdersError(null);
+
+        hasFetchedOrders.current = true;
+      } catch (error: any) {
+        setOrdersError(error?.message ?? 'Something went wrong.');
+      } finally {
+        if (!silent) {
+          setOrdersLoading(false);
+        }
+      }
+    },
+    [token, API_BASE_URL]
+  );
 
   useEffect(() => {
-    if (
-      activeTab !== 'cart' &&
-      token &&
-      API_BASE_URL &&
-      !hasFetchedOrders.current
-    ) {
-      fetchOrders();
+    if (activeTab === 'cart' || !token || !API_BASE_URL) {
+      return;
     }
-  }, [activeTab, token]);
+
+    if (!hasFetchedOrders.current) {
+      fetchOrders();
+    } else {
+      fetchOrders({ silent: true });
+    }
+
+    const intervalId = setInterval(() => {
+      fetchOrders({ silent: true });
+    }, 15000);
+
+    return () => clearInterval(intervalId);
+  }, [activeTab, token, fetchOrders, API_BASE_URL]);
 
   const hasConfirmedOrder = useMemo(() => {
     if (!order) return false;
@@ -155,16 +207,14 @@ export default function OrdersScreen() {
   }, [order, address, updateOrder]);
 
   const ongoingOrders = useMemo(() => {
-    const activeStatuses = ['pending', 'confirmed', 'in_transit'];
     return orders.filter((record) =>
-      activeStatuses.includes((record.status ?? '').toLowerCase())
+      ONGOING_STATUS.includes((record.status ?? '').toLowerCase())
     );
   }, [orders]);
 
   const completedOrders = useMemo(() => {
-    const doneStatuses = ['delivered', 'cancelled'];
     return orders.filter((record) =>
-      doneStatuses.includes((record.status ?? '').toLowerCase())
+      COMPLETED_STATUS.includes((record.status ?? '').toLowerCase())
     );
   }, [orders]);
 
@@ -200,6 +250,18 @@ export default function OrdersScreen() {
       return;
     }
 
+    const stationRecord = order.stationId
+      ? getStationById(order.stationId)
+      : undefined;
+    const stationState = stationRecord?.state ?? '';
+    const stationCity = stationRecord?.city ?? '';
+    const normalizedState = stationState
+      ? normalizeLgaName(stationState)
+      : '';
+    const normalizedLga = (lga || stationCity)
+      ? normalizeLgaName(lga || stationCity)
+      : '';
+
     try {
       setPlacingOrder(true);
       await authorizedFetch(
@@ -211,6 +273,8 @@ export default function OrdersScreen() {
             station_name: order.stationName,
             delivery_address: order.deliveryAddress ?? address,
             status: 'pending',
+            state: normalizedState || undefined,
+            lga: normalizedLga || undefined,
             items: [
               {
                 product: order.fuelType,
@@ -419,7 +483,7 @@ export default function OrdersScreen() {
           'Select a station, choose a fuel type and quantity, then confirm to review your cart.',
           {
             label: 'Browse Stations',
-            onPress: () => router.push('/(tabs)/index'),
+            onPress: () => router.push('/(tabs)'),
           }
         )
       )}
